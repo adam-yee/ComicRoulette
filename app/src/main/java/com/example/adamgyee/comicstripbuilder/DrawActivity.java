@@ -3,12 +3,14 @@ package com.example.adamgyee.comicstripbuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.simplify.ink.InkView;
 
@@ -31,6 +33,17 @@ public class DrawActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+
+        for (int i = 0; i < mBitmaps.size(); i++) {
+            Log.d("recyclin","yeahp");
+            mBitmaps.get(i).recycle();
+        }
+
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_draw);
@@ -39,6 +52,15 @@ public class DrawActivity extends AppCompatActivity {
         mNumArtists = intent.getIntExtra("numArtists", 3);
 
         mCount = 0;
+        /*
+        if (mBitmaps.size() > 0){
+            for (int i = 0; i < mBitmaps.size(); i++){
+                mBitmaps.get(i).recycle();
+                mBitmaps.set(i, null);
+            }
+            mBitmaps.clear();
+        }
+        */
         // TODO: clear mBitmaps
 
         final InkView ink = (InkView) findViewById(R.id.ink);
@@ -135,14 +157,16 @@ public class DrawActivity extends AppCompatActivity {
                 ByteArrayOutputStream bs = new ByteArrayOutputStream();
                 image.compress(Bitmap.CompressFormat.PNG, 50, bs);
                 nextIntent.putExtra("image" + i, bs.toByteArray());
+                //mBitmaps.get(i).recycle();
+                //current_drawing.recycle();
             }
             startActivity(nextIntent);
+        } else {
+            // Set mini-display to the current drawing, then clear the canvas for the next drawing
+            setPrevious(current_drawing);
+            clearCanvas();
+            mCount++;
         }
-
-        // Set mini-display to the current drawing, then clear the canvas for the next drawing
-        setPrevious(current_drawing);
-        clearCanvas();
-        mCount++;
     }
 
     private void saveBitmap(Bitmap current_drawing, int step){
@@ -163,8 +187,13 @@ public class DrawActivity extends AppCompatActivity {
 
     private void setPrevious(Bitmap current_drawing){
         // Show previous bitmap
-        ImageView JOSH = (ImageView) findViewById(R.id.joshua);
-        JOSH.setImageBitmap(current_drawing);
+        ImageView imageView = (ImageView) findViewById(R.id.joshua);
+        /*
+        if (imageView.getDrawable() != null) {
+            ((BitmapDrawable) imageView.getDrawable()).getBitmap().recycle();
+        }
+        */
+        imageView.setImageBitmap(current_drawing);
     }
 
     private void clearCanvas(){

@@ -3,10 +3,12 @@ package com.example.adamgyee.comicstripbuilder;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
@@ -20,6 +22,22 @@ public class FinalStrip extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         // TODO: send this back to the main menu
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        LinearLayout layout = (LinearLayout)findViewById(R.id.viewing_panel);
+
+        for (int i = 0; i < layout.getChildCount(); i++) {
+            Log.d("recyclin","yup");
+            ImageView v = (ImageView) layout.getChildAt(i);
+            ((BitmapDrawable)v.getDrawable()).getBitmap().recycle();
+        }
+
     }
 
     @Override
@@ -28,6 +46,7 @@ public class FinalStrip extends AppCompatActivity {
         setContentView(R.layout.activity_final_strip);
 
         mViewingPanel = (LinearLayout) findViewById(R.id.viewing_panel);
+
 
         Intent intent = getIntent();
         mNumArtists = intent.getIntExtra("numArtists", 3);
