@@ -12,6 +12,7 @@ import android.widget.ImageView;
 
 import com.simplify.ink.InkView;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Stack;
@@ -22,12 +23,12 @@ public class DrawActivity extends AppCompatActivity {
     private int mNumArtists;
     private Button mFinished;
     private Button mBlue, mBlack, mWhite, mRed, mYellow, mGreen;
-
     private ArrayList<Bitmap> mBitmaps = new ArrayList<Bitmap>();
-    private Bitmap mImage0 = null;
-    private Bitmap mImage1 = null;
-    private Bitmap mImage2 = null;
-    private Bitmap mImage3 = null;
+
+    @Override
+    public void onBackPressed() {
+        // Don't want users to mess up their masterpieces!
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +38,8 @@ public class DrawActivity extends AppCompatActivity {
         Intent intent = getIntent();
         mNumArtists = intent.getIntExtra("numArtists", 3);
 
-        mCount = 1;
+        mCount = 0;
+        // TODO: clear mBitmaps
 
         final InkView ink = (InkView) findViewById(R.id.ink);
         ink.setColor(getResources().getColor(android.R.color.black));
@@ -48,8 +50,7 @@ public class DrawActivity extends AppCompatActivity {
         mFinished.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int currentStep = mCount;
-                nextStep(currentStep);
+                frameDone(mCount);
             }
         });
 
@@ -111,107 +112,40 @@ public class DrawActivity extends AppCompatActivity {
 
     }
 
-    private void nextStep(int prevStep){
+    private void frameDone(int currentCount){
 
         final InkView ink = (InkView) findViewById(R.id.ink);
 
-        // Save current bitmap
-        Bitmap prev_drawing = ink.getBitmap();
+        // Grab image of canvas
+        Bitmap current_drawing = ink.getBitmap();
 
-        if (prevStep < mNumArtists){
-            // Working state of comic
-            mBitmaps.add(prev_drawing);
-            saveBitmap(prev_drawing, prevStep);
-            setPrevious(prev_drawing);
-            clearCanvas();
-            mCount++;
-        } else if (prevStep == mNumArtists){
+        // Save image to bitmap
+        mBitmaps.add(current_drawing);
+        saveBitmap(current_drawing, currentCount);
+
+        if (currentCount == mNumArtists-1){
             // This is the end state of the comic
             // Pass all bitmaps to FinalStrip activity to display
             // and call next intent
             Intent nextIntent = new Intent(this, FinalStrip.class);
             nextIntent.putExtra("numArtists", mNumArtists);
             for (int i = 0; i < mBitmaps.size(); i++){
-                nextIntent.putExtra("image" + i, mBitmaps.get(i));
+                // bitmaps are too large to place in intentextras, so we need to compress them
+                Bitmap image = mBitmaps.get(i);
+                ByteArrayOutputStream bs = new ByteArrayOutputStream();
+                image.compress(Bitmap.CompressFormat.PNG, 50, bs);
+                nextIntent.putExtra("image" + i, bs.toByteArray());
             }
             startActivity(nextIntent);
         }
 
-        /*
-        switch (currentStep){
-            case 0:
-                mImage0 = prev_drawing;
-                setPrevious(prev_drawing);
-                clearCanvas();
-                mCount++;
-                break;
-            case 1:
-                mImage1 = prev_drawing;
-                setPrevious(prev_drawing);
-                clearCanvas();
-                mCount++;
-                break;
-            case 2:
-                mImage2 = prev_drawing;
-                setPrevious(prev_drawing);
-                clearCanvas();
-                mCount++;
-                break;
-            case 3:
-                mImage3 = prev_drawing;
-                clearCanvas();
-                mCount = 0;
-
-                // TODO: start new intent to show off final screen
-                try {
-                    //Write file
-                    String image0_string = "image0.png";
-                    FileOutputStream stream = this.openFileOutput(image0_string, Context.MODE_PRIVATE);
-                    mImage0.compress(Bitmap.CompressFormat.PNG, 100, stream);
-
-                    String image1_string = "image1.png";
-                    stream = this.openFileOutput(image1_string, Context.MODE_PRIVATE);
-                    mImage1.compress(Bitmap.CompressFormat.PNG, 100, stream);
-
-                    String image2_string = "image2.png";
-                    stream = this.openFileOutput(image2_string, Context.MODE_PRIVATE);
-                    mImage2.compress(Bitmap.CompressFormat.PNG, 100, stream);
-
-                    String image3_string = "image3.png";
-                    stream = this.openFileOutput(image3_string, Context.MODE_PRIVATE);
-                    mImage3.compress(Bitmap.CompressFormat.PNG, 100, stream);
-
-                    //Cleanup
-                    stream.close();
-                    mImage0.recycle();
-                    mImage1.recycle();
-                    mImage2.recycle();
-                    mImage3.recycle();
-
-                    //Pop intent
-                    Intent nextIntent = new Intent(this, FinalStrip.class);
-                    nextIntent.putExtra("image0", image0_string);
-                    nextIntent.putExtra("image1", image1_string);
-                    nextIntent.putExtra("image2", image2_string);
-                    nextIntent.putExtra("image3", image3_string);
-                    startActivity(nextIntent);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                break;
-            default:
-                // Shouldn't ever be here
-        }
-        */
-
-
-
-        // Clear image for next drawing
+        // Set mini-display to the current drawing, then clear the canvas for the next drawing
+        setPrevious(current_drawing);
+        clearCanvas();
+        mCount++;
     }
 
-    private void saveBitmap(Bitmap prev_drawing, int step){
+    private void saveBitmap(Bitmap current_drawing, int step){
 
         // TODO: Save to DB for later retrieval
 
@@ -227,10 +161,10 @@ public class DrawActivity extends AppCompatActivity {
         }*/
     }
 
-    private void setPrevious(Bitmap prev_drawing){
+    private void setPrevious(Bitmap current_drawing){
         // Show previous bitmap
         ImageView JOSH = (ImageView) findViewById(R.id.joshua);
-        JOSH.setImageBitmap(prev_drawing);
+        JOSH.setImageBitmap(current_drawing);
     }
 
     private void clearCanvas(){
