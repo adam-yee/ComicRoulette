@@ -1,11 +1,11 @@
 <resources>
-    <string name="app_name">ComicRoulette</string>
+    <string name="app_name">Comic Roulette</string>
     <string name="title">Comic Roulette</string>
-    <string name="num_artists">Select the number of artists: </string>
-
+    <string name="num_artists">Select the number of artists:</string>
+    <string name="frame_num">Frame %1$d of %2$d</string>
     <string-array name="num_artists_array">
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
+        <item>  3  </item>
+        <item>  4  </item>
+        <item>  5  </item>
     </string-array>
 </resources>

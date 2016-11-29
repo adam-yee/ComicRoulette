@@ -52,6 +52,8 @@ public class DrawActivity extends AppCompatActivity {
         mNumArtists = intent.getIntExtra("numArtists", 3);
 
         mCount = 0;
+        getSupportActionBar().setTitle(getResources().getString(R.string.frame_num, mCount+1, mNumArtists));
+
         /*
         if (mBitmaps.size() > 0){
             for (int i = 0; i < mBitmaps.size(); i++){
@@ -162,6 +164,12 @@ public class DrawActivity extends AppCompatActivity {
             }
             startActivity(nextIntent);
         } else {
+            // Set action bar to current frame number
+            getSupportActionBar().setTitle(getResources().getString(R.string.frame_num, mCount+2, mNumArtists));
+            // Set ink color back to black
+            ink.setColor(getResources().getColor(android.R.color.black));
+            ink.setMinStrokeWidth(1.5f);
+            ink.setMaxStrokeWidth(6f);
             // Set mini-display to the current drawing, then clear the canvas for the next drawing
             setPrevious(current_drawing);
             clearCanvas();
