@@ -42,6 +42,14 @@ public class DrawActivity extends AppCompatActivity {
                 mBitmaps.get(i).recycle();
             }
         }
+        mBitmaps.clear();
+
+        // Reset all variables
+        // TODO: save state on close and restore on open
+        ImageView imageView = (ImageView) findViewById(R.id.preview);
+        imageView.setImageBitmap(null);
+        mCount = 0;
+        getSupportActionBar().setTitle(getResources().getString(R.string.frame_num, mCount+1, mNumArtists));
 
     }
 
@@ -49,28 +57,12 @@ public class DrawActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_draw);
+        mCount = 0;
 
         Intent intent = getIntent();
         mNumArtists = intent.getIntExtra("numArtists", 3);
 
-        mCount = 0;
         getSupportActionBar().setTitle(getResources().getString(R.string.frame_num, mCount+1, mNumArtists));
-
-        /*
-        if (mBitmaps.size() > 0){
-            for (int i = 0; i < mBitmaps.size(); i++){
-                mBitmaps.get(i).recycle();
-                mBitmaps.set(i, null);
-            }
-            mBitmaps.clear();
-        }
-        */
-        // TODO: clear mBitmaps
-
-        final InkView ink = (InkView) findViewById(R.id.ink);
-        ink.setColor(getResources().getColor(android.R.color.black));
-        ink.setMinStrokeWidth(1.5f);
-        ink.setMaxStrokeWidth(6f);
 
         mFinished = (Button) findViewById(R.id.finished_drawing_btn);
         mFinished.setOnClickListener(new View.OnClickListener() {
@@ -79,6 +71,67 @@ public class DrawActivity extends AppCompatActivity {
                 frameDone(mCount);
             }
         });
+
+        setUpButtonListeners();
+        mBlack.callOnClick();
+    }
+
+    private void frameDone(int currentCount){
+
+        final InkView ink = (InkView) findViewById(R.id.ink);
+
+        // Grab image of canvas
+        Bitmap current_drawing = ink.getBitmap(getResources().getColor(android.R.color.white)); // Grab image of canvas
+
+        // Save image to bitmap
+        mBitmaps.add(current_drawing);
+        saveBitmap(current_drawing, currentCount);
+
+        if (currentCount == mNumArtists-1){
+            // End state of comic
+            Intent nextIntent = new Intent(this, FinalStrip.class);
+            nextIntent.putExtra("numArtists", mNumArtists);
+            startActivity(nextIntent);
+            DrawActivity.this.finish();
+        } else {
+            getSupportActionBar().setTitle(getResources().getString(R.string.frame_num, mCount+2, mNumArtists)); // Set action bar to current frame number
+            mBlack.callOnClick(); // Set ink color back to black
+            setPrevious(current_drawing); // Set mini-display to the current drawing, then clear the canvas for the next drawing
+            clearCanvas();
+            mCount++;
+        }
+    }
+
+    public String saveBitmap(Bitmap bitmap, int i) {
+
+        String fileName = "image" + i + ".png";
+        Log.d("saving image:", fileName);
+        try {
+            FileOutputStream stream = this.openFileOutput(fileName, Context.MODE_PRIVATE);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            stream.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            fileName = null;
+        }
+        return fileName;
+    }
+
+    private void setPrevious(Bitmap current_drawing){
+        // Show previous bitmap
+        ImageView imageView = (ImageView) findViewById(R.id.preview);
+        imageView.setImageBitmap(current_drawing);
+    }
+
+    private void clearCanvas(){
+        final InkView ink = (InkView) findViewById(R.id.ink);
+        ink.clear();
+    }
+
+    private void setUpButtonListeners(){
+
+        final InkView ink = (InkView) findViewById(R.id.ink);
 
         mBlue = (Button) findViewById(R.id.blue_btn);
         mBlue.setOnClickListener(new View.OnClickListener() {
@@ -135,63 +188,5 @@ public class DrawActivity extends AppCompatActivity {
                 ink.setMaxStrokeWidth(6f);
             }
         });
-
-    }
-
-    private void frameDone(int currentCount){
-
-        final InkView ink = (InkView) findViewById(R.id.ink);
-
-        // Grab image of canvas
-        Bitmap current_drawing = ink.getBitmap();
-
-        // Save image to bitmap
-        mBitmaps.add(current_drawing);
-        saveBitmap(current_drawing, currentCount);
-
-        if (currentCount == mNumArtists-1){
-            // This is the end state of the comic
-            // Pass all bitmaps to FinalStrip activity to display
-            // and call next intent
-            Intent nextIntent = new Intent(this, FinalStrip.class);
-            nextIntent.putExtra("numArtists", mNumArtists);
-            startActivity(nextIntent);
-        } else {
-            // Set action bar to current frame number
-            getSupportActionBar().setTitle(getResources().getString(R.string.frame_num, mCount+2, mNumArtists));
-            // Set ink color back to black
-            mBlack.callOnClick();
-            // Set mini-display to the current drawing, then clear the canvas for the next drawing
-            setPrevious(current_drawing);
-            clearCanvas();
-            mCount++;
-        }
-    }
-
-    public String saveBitmap(Bitmap bitmap, int i) {
-
-        String fileName = "image" + i + ".png";
-        Log.d("saving image:", fileName);
-        try {
-            FileOutputStream stream = this.openFileOutput(fileName, Context.MODE_PRIVATE);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            stream.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            fileName = null;
-        }
-        return fileName;
-    }
-
-    private void setPrevious(Bitmap current_drawing){
-        // Show previous bitmap
-        ImageView imageView = (ImageView) findViewById(R.id.joshua);
-        imageView.setImageBitmap(current_drawing);
-    }
-
-    private void clearCanvas(){
-        final InkView ink = (InkView) findViewById(R.id.ink);
-        ink.clear();
     }
 }

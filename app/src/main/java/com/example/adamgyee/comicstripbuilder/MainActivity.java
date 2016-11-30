@@ -1,6 +1,10 @@
 package com.example.adamgyee.comicstripbuilder;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,11 +20,13 @@ public class MainActivity extends AppCompatActivity {
 
     private ImageButton mNewStrip;
 
+/*
     @Override
     public void onBackPressed()
     {
 
     }
+*/
 
     @Override
     protected void onStop() {
@@ -40,6 +46,31 @@ public class MainActivity extends AppCompatActivity {
                 R.array.num_artists_array, android.R.layout.simple_spinner_item);
         spinner_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         numArtistSpinner.setAdapter(spinner_adapter);
+
+        // Get permissions
+        if (ContextCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        1);
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
 
         mNewStrip = (ImageButton) findViewById(R.id.new_strip_btn);
         mNewStrip.setOnClickListener(new View.OnClickListener() {
@@ -68,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent nextIntent = new Intent(MainActivity.this, DrawActivity.class);
                 nextIntent.putExtra("numArtists", numArtistsInt);
                 MainActivity.this.startActivity(nextIntent);
+                MainActivity.this.finish();
             }
         });
 

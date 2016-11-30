@@ -2,6 +2,7 @@
     <string name="app_name">Comic Roulette</string>
     <string name="title">Comic Roulette</string>
     <string name="action_save">Save Comic to Gallery</string>
+    <string name="action_home">Return Home</string>
     <string name="num_artists">Select the number of artists:</string>
     <string name="frame_num">Frame %1$d of %2$d</string>
     <string-array name="num_artists_array">
