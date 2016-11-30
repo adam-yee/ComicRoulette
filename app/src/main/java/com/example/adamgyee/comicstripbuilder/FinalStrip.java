@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 
 public class FinalStrip extends AppCompatActivity {
 
@@ -86,17 +87,30 @@ public class FinalStrip extends AppCompatActivity {
         // Retrieve the previous intent's bitmaps for fast displaying
         // we're also saving the bitmaps to a database in DrawActivity for future retrieval
         for (int i = 0; i < mNumArtists; i++){
-            if (intent.hasExtra("image" + i)) {
-                try {
-                    ImageView imageView = new ImageView(getApplicationContext());
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(intent.getByteArrayExtra("image" + i), 0, intent.getByteArrayExtra("image" + i).length);
-                    imageView.setImageBitmap(bitmap);
-                    imageView.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.layout_border));
-                    mViewingPanel.addView(imageView);
-                } catch (RuntimeException e){
-                    Log.e("Exception:", e.toString());
-                }
+
+            try {
+                ImageView imageView = new ImageView(getApplicationContext());
+                FileInputStream is = this.openFileInput("image" + i + ".png");
+                Bitmap bitmap = BitmapFactory.decodeStream(is);
+                is.close();
+                imageView.setImageBitmap(bitmap);
+                imageView.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.layout_border));
+                mViewingPanel.addView(imageView);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+
+            /*
+            try {
+                ImageView imageView = new ImageView(getApplicationContext());
+                Bitmap bitmap = BitmapFactory.decodeStream(getApplicationContext().openFileInput("image"+i));
+                imageView.setImageBitmap(bitmap);
+                //imageView.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.layout_border));
+                mViewingPanel.addView(imageView);
+            } catch (IOException e) {
+                Log.e("exception:", e.toString());
+            }
+            */
         }
 
     }

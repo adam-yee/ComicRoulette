@@ -155,15 +155,6 @@ public class DrawActivity extends AppCompatActivity {
             // and call next intent
             Intent nextIntent = new Intent(this, FinalStrip.class);
             nextIntent.putExtra("numArtists", mNumArtists);
-            for (int i = 0; i < mBitmaps.size(); i++){
-                // bitmaps are too large to place in intentextras, so we need to compress them
-                Bitmap image = mBitmaps.get(i);
-                ByteArrayOutputStream bs = new ByteArrayOutputStream();
-                image.compress(Bitmap.CompressFormat.PNG, 50, bs);
-                nextIntent.putExtra("image" + i, bs.toByteArray());
-                //mBitmaps.get(i).recycle();
-                //current_drawing.recycle();
-            }
             startActivity(nextIntent);
         } else {
             // Set action bar to current frame number
@@ -177,30 +168,25 @@ public class DrawActivity extends AppCompatActivity {
         }
     }
 
-    private void saveBitmap(Bitmap current_drawing, int step){
+    public String saveBitmap(Bitmap bitmap, int i) {
 
-        // TODO: Save to DB for later retrieval
+        String fileName = "image" + i + ".png";
+        Log.d("saving image:", fileName);
+        try {
+            FileOutputStream stream = this.openFileOutput(fileName, Context.MODE_PRIVATE);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            stream.close();
 
-        return;
-        /*try {
-            String image_string = Integer.toString(step);
-            image_string += ".png";
-            Log.d("")
-            FileOutputStream stream = this.openFileOutput(image_string, Context.MODE_PRIVATE);
-            mImage0.compress(Bitmap.CompressFormat.PNG, 100, stream);
         } catch (Exception e) {
             e.printStackTrace();
-        }*/
+            fileName = null;
+        }
+        return fileName;
     }
 
     private void setPrevious(Bitmap current_drawing){
         // Show previous bitmap
         ImageView imageView = (ImageView) findViewById(R.id.joshua);
-        /*
-        if (imageView.getDrawable() != null) {
-            ((BitmapDrawable) imageView.getDrawable()).getBitmap().recycle();
-        }
-        */
         imageView.setImageBitmap(current_drawing);
     }
 
