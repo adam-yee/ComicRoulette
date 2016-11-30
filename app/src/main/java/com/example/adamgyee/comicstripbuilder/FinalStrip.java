@@ -8,9 +8,13 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import java.io.FileInputStream;
 
@@ -18,6 +22,32 @@ public class FinalStrip extends AppCompatActivity {
 
     private int mNumArtists;
     private LinearLayout mViewingPanel;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_save, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+        if (id == R.id.action_save) {
+            Toast.makeText(getApplicationContext(), "Saving comic to gallery", Toast.LENGTH_SHORT).show();
+            saveComicToGallery();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private boolean saveComicToGallery(){
+        // TODO: implement save
+        return false;
+    }
 
     @Override
     public void onBackPressed() {
@@ -33,9 +63,11 @@ public class FinalStrip extends AppCompatActivity {
         LinearLayout layout = (LinearLayout)findViewById(R.id.viewing_panel);
 
         for (int i = 0; i < layout.getChildCount(); i++) {
-            Log.d("recyclin","yup");
             ImageView v = (ImageView) layout.getChildAt(i);
-            ((BitmapDrawable)v.getDrawable()).getBitmap().recycle();
+            if (((BitmapDrawable)v.getDrawable()).getBitmap() != null && !((BitmapDrawable)v.getDrawable()).getBitmap().isRecycled()) {
+                Log.d("recyclin", "yup");
+                ((BitmapDrawable) v.getDrawable()).getBitmap().recycle();
+            }
         }
 
     }
@@ -55,11 +87,15 @@ public class FinalStrip extends AppCompatActivity {
         // we're also saving the bitmaps to a database in DrawActivity for future retrieval
         for (int i = 0; i < mNumArtists; i++){
             if (intent.hasExtra("image" + i)) {
-                ImageView imageView = new ImageView(getApplicationContext());
-                Bitmap bitmap = BitmapFactory.decodeByteArray(intent.getByteArrayExtra("image" + i), 0, intent.getByteArrayExtra("image" + i).length);
-                imageView.setImageBitmap(bitmap);
-                imageView.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.layout_border));
-                mViewingPanel.addView(imageView);
+                try {
+                    ImageView imageView = new ImageView(getApplicationContext());
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(intent.getByteArrayExtra("image" + i), 0, intent.getByteArrayExtra("image" + i).length);
+                    imageView.setImageBitmap(bitmap);
+                    imageView.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.layout_border));
+                    mViewingPanel.addView(imageView);
+                } catch (RuntimeException e){
+                    Log.e("Exception:", e.toString());
+                }
             }
         }
 

@@ -17,6 +17,20 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton mNewStrip;
 
     @Override
+    public void onBackPressed()
+    {
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        Log.d("i'm here", "me too");
+
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);

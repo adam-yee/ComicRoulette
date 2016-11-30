@@ -9,11 +9,13 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
+    android:gravity="center"
     tools:context="com.example.adamgyee.comicstripbuilder.FinalStrip">
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_gravity="center">
         
         <LinearLayout
             android:id="@+id/viewing_panel"

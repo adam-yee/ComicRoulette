@@ -37,8 +37,10 @@ public class DrawActivity extends AppCompatActivity {
         super.onStop();
 
         for (int i = 0; i < mBitmaps.size(); i++) {
-            Log.d("recyclin","yeahp");
-            mBitmaps.get(i).recycle();
+            if (mBitmaps.get(i) != null && !mBitmaps.get(i).isRecycled()) {
+                Log.d("recyclin","yeahp");
+                mBitmaps.get(i).recycle();
+            }
         }
 
     }
@@ -167,9 +169,7 @@ public class DrawActivity extends AppCompatActivity {
             // Set action bar to current frame number
             getSupportActionBar().setTitle(getResources().getString(R.string.frame_num, mCount+2, mNumArtists));
             // Set ink color back to black
-            ink.setColor(getResources().getColor(android.R.color.black));
-            ink.setMinStrokeWidth(1.5f);
-            ink.setMaxStrokeWidth(6f);
+            mBlack.callOnClick();
             // Set mini-display to the current drawing, then clear the canvas for the next drawing
             setPrevious(current_drawing);
             clearCanvas();
