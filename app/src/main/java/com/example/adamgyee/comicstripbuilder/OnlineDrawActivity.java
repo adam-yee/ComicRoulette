@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +27,7 @@ import com.simplify.ink.InkView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -98,6 +100,13 @@ public class OnlineDrawActivity extends AppCompatActivity {
         // Grab image of canvas
         Bitmap current_drawing = ink.getBitmap(getResources().getColor(android.R.color.white)); // Grab image of canvas
 
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        current_drawing.compress(Bitmap.CompressFormat.PNG, 80, baos);
+        final byte[] imageBytes = baos.toByteArray();
+        final String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+
+        Log.d("lelel:", encodedImage);
+
         // TODO: make call to save online comic, send encodedImage, ID, and current frame
         RequestQueue queue = Volley.newRequestQueue(this);
 
@@ -125,7 +134,7 @@ public class OnlineDrawActivity extends AppCompatActivity {
             protected Map<String, String> getParams()
             {
                 Map<String, String>  params = new HashMap<String, String>();
-                params.put("name", "hi");
+                params.put("image", encodedImage);
                 params.put("domain", "sup");
 
                 return params;
