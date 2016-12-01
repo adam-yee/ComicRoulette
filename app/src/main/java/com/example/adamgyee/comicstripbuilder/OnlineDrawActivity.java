@@ -23,10 +23,13 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.simplify.ink.InkView;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class OnlineDrawActivity extends AppCompatActivity {
 
@@ -44,7 +47,6 @@ public class OnlineDrawActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_online_draw);
 
-        // TODO make call to get random comic
         getOnlineComic();
 
         getSupportActionBar().setTitle(getResources().getString(R.string.frame_num, 1, stripLength));
@@ -74,13 +76,14 @@ public class OnlineDrawActivity extends AppCompatActivity {
 
                 @Override
                 public void onResponse(JSONObject response) {
+
+                    // TODO Parse this to get ID, prevFrame, and current num
                     Log.d("Response: " , response.toString());
                 }
             }, new Response.ErrorListener() {
 
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    // TODO Auto-generated method stub
                     Log.d("Volley Error ", error.toString());
                 }
             });
@@ -95,7 +98,69 @@ public class OnlineDrawActivity extends AppCompatActivity {
         // Grab image of canvas
         Bitmap current_drawing = ink.getBitmap(getResources().getColor(android.R.color.white)); // Grab image of canvas
 
-        // TODO: make call to save online comic
+        // TODO: make call to save online comic, send encodedImage, ID, and current frame
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        final String url = "http://10.0.2.2:8080/postComic";
+
+        StringRequest postRequest = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>()
+                {
+                    @Override
+                    public void onResponse(String response) {
+                        // response
+                        Log.d("Response", response);
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        Log.d("Error.Response", error.toString());
+                    }
+                }
+        ) {
+            @Override
+            protected Map<String, String> getParams()
+            {
+                Map<String, String>  params = new HashMap<String, String>();
+                params.put("name", "hi");
+                params.put("domain", "sup");
+
+                return params;
+            }
+        };
+        queue.add(postRequest);
+
+        /*
+        JSONObject jsonBody = new JSONObject();
+        try {
+            jsonBody.put("ID", "3");
+            jsonBody.put("name", "NAME OF STUDENT");
+            jsonBody.put("year", "3rd");
+            jsonBody.put("curriculum", "Arts");
+            jsonBody.put("birthday", "5/5/1993");
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.d("attempting to post", "fingers crossed");
+        new JsonObjectRequest(url, jsonBody, new Response.Listener<JSONObject>(){
+            @Override
+            public void onResponse(JSONObject response) {
+
+                // TODO Parse this to get ID, prevFrame, and current num
+                Log.d("Response: " , response.toString());
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("Volley Error ", error.toString());
+            }
+        });
+        */
 
     }
 
