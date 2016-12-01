@@ -36,6 +36,12 @@
             android:background="@drawable/circle"
             />
 
+        <Button
+            android:text="@string/play_online"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/online_btn" />
+
     </LinearLayout>
 
     <LinearLayout

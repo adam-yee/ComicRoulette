@@ -48,7 +48,7 @@ public class FinalStrip extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(FinalStrip.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
-
+            Log.d("checked","have permisson");
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(FinalStrip.this,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE)) {

@@ -3,6 +3,7 @@
     package="com.example.adamgyee.comicstripbuilder">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -13,11 +14,13 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity android:name=".DrawActivity" />
-        <activity android:name=".FinalStrip"></activity>
+        <activity android:name=".FinalStrip" />
+        <activity android:name=".OnlineDrawActivity"></activity>
     </application>
 
 </manifest>

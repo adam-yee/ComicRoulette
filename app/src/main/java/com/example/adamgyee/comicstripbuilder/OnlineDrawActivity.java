@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,22 +13,26 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.simplify.ink.InkView;
 
-import java.io.ByteArrayOutputStream;
+import org.json.JSONObject;
+
 import java.io.FileOutputStream;
 import java.util.ArrayList;
-import java.util.Stack;
 
-public class DrawActivity extends AppCompatActivity {
+public class OnlineDrawActivity extends AppCompatActivity {
 
-    private int mCount;
-    private int mNumArtists;
+    final private int stripLength = 4;
     private Button mFinished;
     private Button mBlue, mBlack, mWhite, mRed, mYellow, mGreen;
-    private ArrayList<Bitmap> mBitmaps = new ArrayList<Bitmap>();
 
     @Override
     public void onBackPressed() {
@@ -37,42 +40,20 @@ public class DrawActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-
-        for (int i = 0; i < mBitmaps.size(); i++) {
-            if (mBitmaps.get(i) != null && !mBitmaps.get(i).isRecycled()) {
-                Log.d("recyclin","yeahp");
-                mBitmaps.get(i).recycle();
-            }
-        }
-        mBitmaps.clear();
-
-        // Reset all variables
-        // TODO: save state on close and restore on open
-        ImageView imageView = (ImageView) findViewById(R.id.preview);
-        imageView.setImageBitmap(null);
-        mCount = 0;
-        getSupportActionBar().setTitle(getResources().getString(R.string.frame_num, mCount+1, mNumArtists));
-
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_draw);
-        mCount = 0;
+        setContentView(R.layout.activity_online_draw);
 
-        Intent intent = getIntent();
-        mNumArtists = intent.getIntExtra("numArtists", 3);
+        // TODO make call to get random comic
+        getOnlineComic();
 
-        getSupportActionBar().setTitle(getResources().getString(R.string.frame_num, mCount+1, mNumArtists));
+        getSupportActionBar().setTitle(getResources().getString(R.string.frame_num, 1, stripLength));
 
         mFinished = (Button) findViewById(R.id.finished_drawing_btn);
         mFinished.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                frameDone(mCount);
+                finishOnlineFrame();
             }
         });
 
@@ -80,49 +61,42 @@ public class DrawActivity extends AppCompatActivity {
         mBlack.callOnClick();
     }
 
-    private void frameDone(int currentCount){
+    private void getOnlineComic(){
+
+        Log.d("online","getting");
+        // Create new RequestQueue (persists(?))
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url ="http://10.0.2.2:8080/getComic";
+
+        // Request a json response from the provided URL.
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+            (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+
+                @Override
+                public void onResponse(JSONObject response) {
+                    Log.d("Response: " , response.toString());
+                }
+            }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    // TODO Auto-generated method stub
+                    Log.d("Volley Error ", error.toString());
+                }
+            });
+        // Add the request to the RequestQueue.
+        queue.add(jsObjRequest);
+    }
+
+    private void finishOnlineFrame(){
 
         final InkView ink = (InkView) findViewById(R.id.ink);
 
         // Grab image of canvas
         Bitmap current_drawing = ink.getBitmap(getResources().getColor(android.R.color.white)); // Grab image of canvas
 
-        // Save image to bitmap
-        mBitmaps.add(current_drawing);
-        saveBitmap(current_drawing, currentCount);
+        // TODO: make call to save online comic
 
-        if (currentCount == mNumArtists-1){
-            // End state of comic
-            Intent nextIntent = new Intent(this, FinalStrip.class);
-            nextIntent.putExtra("numArtists", mNumArtists);
-            startActivity(nextIntent);
-            DrawActivity.this.finish();
-        } else {
-            ImageView imageView = new ImageView(this);
-            imageView.setImageResource(R.drawable.hands);
-            loadPhoto(imageView, 100, 100);
-            getSupportActionBar().setTitle(getResources().getString(R.string.frame_num, mCount+2, mNumArtists)); // Set action bar to current frame number
-            mBlack.callOnClick(); // Set ink color back to black
-            setPrevious(current_drawing); // Set mini-display to the current drawing, then clear the canvas for the next drawing
-            clearCanvas();
-            mCount++;
-        }
-    }
-
-    public String saveBitmap(Bitmap bitmap, int i) {
-
-        String fileName = "image" + i + ".png";
-        Log.d("saving image:", fileName);
-        try {
-            FileOutputStream stream = this.openFileOutput(fileName, Context.MODE_PRIVATE);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            stream.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            fileName = null;
-        }
-        return fileName;
     }
 
     private void setPrevious(Bitmap current_drawing){
