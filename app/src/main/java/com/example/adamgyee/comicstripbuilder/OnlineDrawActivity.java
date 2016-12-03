@@ -101,7 +101,7 @@ public class OnlineDrawActivity extends AppCompatActivity {
         Bitmap current_drawing = ink.getBitmap(getResources().getColor(android.R.color.white)); // Grab image of canvas
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        current_drawing.compress(Bitmap.CompressFormat.PNG, 80, baos);
+        current_drawing.compress(Bitmap.CompressFormat.JPEG, 0, baos);
         final byte[] imageBytes = baos.toByteArray();
         final String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
 
