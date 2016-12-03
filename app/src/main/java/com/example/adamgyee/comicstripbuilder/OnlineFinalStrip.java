@@ -7,7 +7,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.provider.MediaStore;
@@ -15,24 +14,31 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONObject;
+
 import java.io.FileInputStream;
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 
-public class FinalStrip extends AppCompatActivity {
+public class OnlineFinalStrip extends AppCompatActivity {
 
-    private int mNumArtists;
     private LinearLayout mViewingPanel;
+    private String mComicID;
+    private int mComicSize;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -45,12 +51,12 @@ public class FinalStrip extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         // Get permissions
-        if (ContextCompat.checkSelfPermission(FinalStrip.this,
+        if (ContextCompat.checkSelfPermission(OnlineFinalStrip.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             Log.d("checked","have permisson");
             // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(FinalStrip.this,
+            if (ActivityCompat.shouldShowRequestPermissionRationale(OnlineFinalStrip.this,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
                 // Show an explanation to the user *asynchronously* -- don't block
@@ -60,7 +66,7 @@ public class FinalStrip extends AppCompatActivity {
             } else {
 
                 // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(FinalStrip.this,
+                ActivityCompat.requestPermissions(OnlineFinalStrip.this,
                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         1);
                 // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
@@ -77,7 +83,7 @@ public class FinalStrip extends AppCompatActivity {
         } else if (id == R.id.action_home) {
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
-            FinalStrip.this.finish();
+            OnlineFinalStrip.this.finish();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -129,7 +135,7 @@ public class FinalStrip extends AppCompatActivity {
     public void onBackPressed() {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
-        FinalStrip.this.finish();
+        OnlineFinalStrip.this.finish();
     }
 
     @Override
@@ -146,34 +152,71 @@ public class FinalStrip extends AppCompatActivity {
             }
             v.setImageBitmap(null);
         }
-        FinalStrip.this.finish();
+        OnlineFinalStrip.this.finish();
 
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_final_strip);
+        setContentView(R.layout.activity_online_final_strip);
 
         mViewingPanel = (LinearLayout) findViewById(R.id.viewing_panel);
 
         Intent intent = getIntent();
-        mNumArtists = intent.getIntExtra("numArtists", 3);
+        mComicSize = intent.getIntExtra("comicSize", 4);
+        mComicID = intent.getStringExtra("comicID");
 
-        // Retrieve bitmaps from file to display full strip
-        for (int i = 0; i < mNumArtists; i++){
+        // get http:localhost/getEntireComic?comicid=x
 
-            try {
-                ImageView imageView = new ImageView(getApplicationContext());
-                FileInputStream is = this.openFileInput("image" + i + ".png");
-                Bitmap bitmap = BitmapFactory.decodeStream(is);
-                is.close();
-                imageView.setImageBitmap(bitmap);
-                imageView.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.layout_border));
-                mViewingPanel.addView(imageView);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = getString(R.string.get_entire_comic_url, mComicID);
+
+        // Request a json response from the provided URL.
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            mComicID = response.get(getString(R.string.mComicId_string)).toString();
+                            //mPrevFrame = response.get(getString(R.string.mPrevFrame_string)).toString();
+                            //mCompletedFrames = response.get(getString(R.string.mCompletedFrames_string)).toString();
+                            int completed = (int) response.get(getString(R.string.mCompletedFrames_string));
+                            Log.d("RESPONSE:", response.toString());
+                            for (int i = 0; i < completed; i++){
+                                String getFrameString = "f" + i;
+                                String getFrame = response.get(getFrameString).toString();
+                                try {
+                                    if (getFrame != "null") {
+                                        byte[] imageAsBytes = Base64.decode(getFrame.getBytes(), Base64.DEFAULT);
+                                        ImageView imageView = new ImageView(getApplicationContext());
+                                        Bitmap bitmap = (BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
+                                        imageView.setImageBitmap(bitmap.createScaledBitmap(bitmap, 500, 500, false));
+                                        imageView.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.layout_border));
+                                        mViewingPanel.addView(imageView);
+
+                                    }
+                                } catch (Exception e){
+                                    Log.e("Exception", e.toString());
+                                }
+
+                            }
+
+                        } catch (Exception e) {
+                            Log.e("error", "json");
+                        }
+
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d("Volley Error ", error.toString());
+
+                    }
+                });
+
+        queue.add(jsObjRequest);
+
     }
 }

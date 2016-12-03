@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -35,9 +37,10 @@ import java.util.Map;
 
 public class OnlineDrawActivity extends AppCompatActivity {
 
-    final private int stripLength = 4;
+    final private int mStripLength = 4;
     private Button mFinished;
     private Button mBlue, mBlack, mWhite, mRed, mYellow, mGreen;
+    private String mComicID, mPrevFrame, mCompletedFrames;
 
     @Override
     public void onBackPressed() {
@@ -50,8 +53,6 @@ public class OnlineDrawActivity extends AppCompatActivity {
         setContentView(R.layout.activity_online_draw);
 
         getOnlineComic();
-
-        getSupportActionBar().setTitle(getResources().getString(R.string.frame_num, 1, stripLength));
 
         mFinished = (Button) findViewById(R.id.finished_drawing_btn);
         mFinished.setOnClickListener(new View.OnClickListener() {
@@ -67,10 +68,8 @@ public class OnlineDrawActivity extends AppCompatActivity {
 
     private void getOnlineComic(){
 
-        Log.d("online","getting");
-        // Create new RequestQueue (persists(?))
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url ="http://10.0.2.2:8080/getComic";
+        String url = getString(R.string.get_comic_url);
 
         // Request a json response from the provided URL.
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
@@ -78,18 +77,39 @@ public class OnlineDrawActivity extends AppCompatActivity {
 
                 @Override
                 public void onResponse(JSONObject response) {
+                    try {
+                        mComicID = response.get(getString(R.string.mComicId_string)).toString();
+                        mPrevFrame = response.get(getString(R.string.mPrevFrame_string)).toString();
+                        mCompletedFrames = response.get(getString(R.string.mCompletedFrames_string)).toString();
+                        int completed = (int) response.get(getString(R.string.mCompletedFrames_string));
 
-                    // TODO Parse this to get ID, prevFrame, and current num
-                    Log.d("Response: " , response.toString());
+                        // Decode previous image and set it to the preview box
+                        byte[] imageAsBytes = Base64.decode(mPrevFrame.getBytes(), Base64.DEFAULT);
+                        setPrevious(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
+
+                        // Set actionbar to reflect which frame user is editing
+                        getSupportActionBar().setTitle(getResources().getString(R.string.frame_num, completed+1, mStripLength));
+
+                        // TODO Store mComicID in local storage to use to lookup comic progress
+                        Log.d("Retrieved Comic: " , mComicID.toString());
+
+                    } catch (Exception e) {
+                        Log.e("error", "json");
+                    }
+
                 }
             }, new Response.ErrorListener() {
-
                 @Override
                 public void onErrorResponse(VolleyError error) {
                     Log.d("Volley Error ", error.toString());
+                    Toast.makeText(OnlineDrawActivity.this, "Cannot connect to server", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(OnlineDrawActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    OnlineDrawActivity.this.finish();
+
                 }
             });
-        // Add the request to the RequestQueue.
+
         queue.add(jsObjRequest);
     }
 
@@ -98,34 +118,32 @@ public class OnlineDrawActivity extends AppCompatActivity {
         final InkView ink = (InkView) findViewById(R.id.ink);
 
         // Grab image of canvas
-        Bitmap current_drawing = ink.getBitmap(getResources().getColor(android.R.color.white)); // Grab image of canvas
-
+        Bitmap current_drawing = Bitmap.createScaledBitmap(ink.getBitmap(getResources().getColor(android.R.color.white)), 120, 120, false);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        current_drawing.compress(Bitmap.CompressFormat.JPEG, 0, baos);
+        current_drawing.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         final byte[] imageBytes = baos.toByteArray();
         final String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
 
-        Log.d("lelel:", encodedImage);
-
-        // TODO: make call to save online comic, send encodedImage, ID, and current frame
+        // make call to save online comic, send encodedImage, ID, and current frame
         RequestQueue queue = Volley.newRequestQueue(this);
-
-        final String url = "http://10.0.2.2:8080/postComic";
-
+        final String url = getString(R.string.post_comic_url);
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>()
                 {
                     @Override
                     public void onResponse(String response) {
-                        // response
-                        Log.d("Response", response);
+                        Intent intent = new Intent(OnlineDrawActivity.this, OnlineFinalStrip.class);
+                        intent.putExtra("comicID", mComicID);
+                        intent.putExtra("comicSize", mStripLength);
+                        startActivity(intent);
+                        OnlineDrawActivity.this.finish();
+
                     }
                 },
                 new Response.ErrorListener()
                 {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        // error
                         Log.d("Error.Response", error.toString());
                     }
                 }
@@ -134,43 +152,14 @@ public class OnlineDrawActivity extends AppCompatActivity {
             protected Map<String, String> getParams()
             {
                 Map<String, String>  params = new HashMap<String, String>();
-                params.put("image", encodedImage);
-                params.put("domain", "sup");
-
+                // TODO Check if these exist before sending them
+                params.put(getString(R.string.frame_string), encodedImage);
+                params.put(getString(R.string.mComicId_string), mComicID);
+                params.put(getString(R.string.putFrame_string), mCompletedFrames);
                 return params;
             }
         };
         queue.add(postRequest);
-
-        /*
-        JSONObject jsonBody = new JSONObject();
-        try {
-            jsonBody.put("ID", "3");
-            jsonBody.put("name", "NAME OF STUDENT");
-            jsonBody.put("year", "3rd");
-            jsonBody.put("curriculum", "Arts");
-            jsonBody.put("birthday", "5/5/1993");
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        Log.d("attempting to post", "fingers crossed");
-        new JsonObjectRequest(url, jsonBody, new Response.Listener<JSONObject>(){
-            @Override
-            public void onResponse(JSONObject response) {
-
-                // TODO Parse this to get ID, prevFrame, and current num
-                Log.d("Response: " , response.toString());
-            }
-        }, new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.d("Volley Error ", error.toString());
-            }
-        });
-        */
-
     }
 
     private void setPrevious(Bitmap current_drawing){

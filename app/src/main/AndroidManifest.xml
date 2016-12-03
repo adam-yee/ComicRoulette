@@ -20,7 +20,8 @@
         </activity>
         <activity android:name=".DrawActivity" />
         <activity android:name=".FinalStrip" />
-        <activity android:name=".OnlineDrawActivity"></activity>
+        <activity android:name=".OnlineDrawActivity" />
+        <activity android:name=".OnlineFinalStrip"></activity>
     </application>
 
 </manifest>

@@ -99,7 +99,7 @@ public class DrawActivity extends AppCompatActivity {
             DrawActivity.this.finish();
         } else {
             ImageView imageView = new ImageView(this);
-            imageView.setImageResource(R.drawable.hands);
+            imageView.setImageResource(R.drawable.pass_image1);
             loadPhoto(imageView, 100, 100);
             getSupportActionBar().setTitle(getResources().getString(R.string.frame_num, mCount+2, mNumArtists)); // Set action bar to current frame number
             mBlack.callOnClick(); // Set ink color back to black
