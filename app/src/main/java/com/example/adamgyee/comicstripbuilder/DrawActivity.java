@@ -42,7 +42,6 @@ public class DrawActivity extends AppCompatActivity {
 
         for (int i = 0; i < mBitmaps.size(); i++) {
             if (mBitmaps.get(i) != null && !mBitmaps.get(i).isRecycled()) {
-                Log.d("recyclin","yeahp");
                 mBitmaps.get(i).recycle();
             }
         }
@@ -112,7 +111,6 @@ public class DrawActivity extends AppCompatActivity {
     public String saveBitmap(Bitmap bitmap, int i) {
 
         String fileName = "image" + i + ".png";
-        Log.d("saving image:", fileName);
         try {
             FileOutputStream stream = this.openFileOutput(fileName, Context.MODE_PRIVATE);
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);

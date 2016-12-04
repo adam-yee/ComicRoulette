@@ -7,10 +7,11 @@
     <string name="num_artists">Select the number of artists</string>
     <string name="frame_num">Frame %1$d of %2$d</string>
     <string name="play_online">Online Roulette</string>
+
     <string name="get_comic_url">http://10.0.2.2:8080/getComic</string>
     <string name="get_entire_comic_url">http://10.0.2.2:8080/getEntireComic?comicid=%1$s</string>
-
     <string name="post_comic_url">http://10.0.2.2:8080/postComic</string>
+
     <string name="mComicId_string">comicID</string>
     <string name="mPrevFrame_string">prevFrame</string>
     <string name="mCompletedFrames_string">framesCompleted</string>

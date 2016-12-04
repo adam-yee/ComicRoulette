@@ -26,23 +26,11 @@ import com.simplify.ink.InkView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ImageButton mNewStrip;
-    private Button mOnlineRoulette;
-
-/*
-    @Override
-    public void onBackPressed()
-    {
-
-    }
-*/
+    private ImageButton mNewStrip, mOnlineRoulette;
 
     @Override
     protected void onStop() {
         super.onStop();
-
-        Log.d("i'm here", "me too");
-
     }
 
     @Override
@@ -50,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        getSupportActionBar().hide();
         // Get permissions
         getExternalStoragePermission();
 
@@ -58,20 +47,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                // Prompt spinner and send to drawactivity
-                ImageView imageView = new ImageView(MainActivity.this);
-                imageView.setImageResource(R.drawable.pass_image1);
-                loadPhoto(imageView, 100, 100);
+            // Prompt spinner and send to drawactivity
+            loadPopup();
 
             }
         });
 
-        mOnlineRoulette = (Button) findViewById(R.id.online_btn);
+        mOnlineRoulette = (ImageButton) findViewById(R.id.online_btn);
         mOnlineRoulette.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                // TODO: get internet permissions
                 getInternetPermissions();
 
                 Intent nextIntent = new Intent(MainActivity.this, OnlineDrawActivity.class);
@@ -79,10 +65,9 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.this.finish();
             }
         });
-
     }
 
-    private void loadPhoto(ImageView imageView, int width, int height) {
+    private void loadPopup() {
 
         AlertDialog.Builder imageDialog = new AlertDialog.Builder(this);
         LayoutInflater inflater = (LayoutInflater) this.getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -95,19 +80,19 @@ public class MainActivity extends AppCompatActivity {
 
             public void onClick(DialogInterface dialog, int which) {
 
-                //numArtistSpinner.getSelectedItem().toString();
-                RadioGroup radioGroup = (RadioGroup) layout.findViewById(R.id.num_artsts_rdio);
-                int selectedId = radioGroup.getCheckedRadioButtonId();
+            //numArtistSpinner.getSelectedItem().toString();
+            RadioGroup radioGroup = (RadioGroup) layout.findViewById(R.id.num_artsts_rdio);
+            int selectedId = radioGroup.getCheckedRadioButtonId();
 
-                // find the radiobutton by returned id
-                RadioButton radioButton = (RadioButton) layout.findViewById(selectedId);
+            // find the radiobutton by returned id
+            RadioButton radioButton = (RadioButton) layout.findViewById(selectedId);
 
-                int numArtistsInt = Integer.parseInt(radioButton.getText().toString());
-                dialog.dismiss();
-                Intent nextIntent = new Intent(MainActivity.this, DrawActivity.class);
-                nextIntent.putExtra("numArtists", numArtistsInt);
-                MainActivity.this.startActivity(nextIntent);
-                MainActivity.this.finish();
+            int numArtistsInt = Integer.parseInt(radioButton.getText().toString());
+            dialog.dismiss();
+            Intent nextIntent = new Intent(MainActivity.this, DrawActivity.class);
+            nextIntent.putExtra("numArtists", numArtistsInt);
+            MainActivity.this.startActivity(nextIntent);
+            MainActivity.this.finish();
             }
         });
 
@@ -116,30 +101,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getInternetPermissions(){
-        // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.INTERNET)
                 != PackageManager.PERMISSION_GRANTED) {
-
-            // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
                     Manifest.permission.INTERNET)) {
-
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
             } else {
-
-                // No explanation needed, we can request the permission.
-
                 ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.INTERNET},
                         1);
-
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
             }
         }
     }
@@ -148,24 +118,12 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
-
-            // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
             } else {
-
-                // No explanation needed, we can request the permission.
                 ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         1);
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
             }
         }
     }

@@ -90,11 +90,8 @@ public class OnlineDrawActivity extends AppCompatActivity {
                         // Set actionbar to reflect which frame user is editing
                         getSupportActionBar().setTitle(getResources().getString(R.string.frame_num, completed+1, mStripLength));
 
-                        // TODO Store mComicID in local storage to use to lookup comic progress
-                        Log.d("Retrieved Comic: " , mComicID.toString());
-
                     } catch (Exception e) {
-                        Log.e("error", "json");
+                        Log.e("error", e.toString());
                     }
 
                 }
@@ -166,34 +163,6 @@ public class OnlineDrawActivity extends AppCompatActivity {
         // Show previous bitmap
         ImageView imageView = (ImageView) findViewById(R.id.preview);
         imageView.setImageBitmap(current_drawing);
-    }
-
-    private void clearCanvas(){
-        final InkView ink = (InkView) findViewById(R.id.ink);
-        ink.clear();
-    }
-
-    private void loadPhoto(ImageView imageView, int width, int height) {
-
-        ImageView tempImageView = imageView;
-
-        AlertDialog.Builder imageDialog = new AlertDialog.Builder(this);
-        LayoutInflater inflater = (LayoutInflater) this.getSystemService(LAYOUT_INFLATER_SERVICE);
-
-        View layout = inflater.inflate(R.layout.popup_instructions,
-                (ViewGroup) findViewById(R.id.layout_root));
-        ImageView image = (ImageView) layout.findViewById(R.id.fullimage);
-        image.setImageDrawable(tempImageView.getDrawable());
-        imageDialog.setView(layout);
-        imageDialog.setPositiveButton(getString(R.string.action_done), new DialogInterface.OnClickListener(){
-
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-
-        imageDialog.create();
-        imageDialog.show();
     }
 
     private void setUpButtonListeners(){

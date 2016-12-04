@@ -44,30 +44,7 @@ public class FinalStrip extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        // Get permissions
-        if (ContextCompat.checkSelfPermission(FinalStrip.this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            Log.d("checked","have permisson");
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(FinalStrip.this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
-            } else {
-
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(FinalStrip.this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        1);
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
-            }
-        }
+        getExternalStoragePermission();
 
         // Show download option in ActionBar
         int id = item.getItemId();
@@ -83,9 +60,7 @@ public class FinalStrip extends AppCompatActivity {
     }
 
     private boolean saveComicToGallery(){
-        // TODO: implement save
 
-        Toast.makeText(getApplicationContext(), "Saved comic to gallery", Toast.LENGTH_SHORT).show();
         LinearLayout layout = (LinearLayout)findViewById(R.id.viewing_panel);
 
         // combine all bitmaps into a single strip to save
@@ -102,12 +77,13 @@ public class FinalStrip extends AppCompatActivity {
                 canvas.drawColor(Color.BLACK);
                 canvas.drawBitmap(bitmap, null, targetRect, null);
                 combined = combineImages(combined, dest);
-
             }
         }
 
         // Save to local gallery
         MediaStore.Images.Media.insertImage(getContentResolver(), combined, "ComicRoulette Image", "Created with ComicRoulette");
+        Toast.makeText(getApplicationContext(), "Saved comic to gallery", Toast.LENGTH_SHORT).show();
+
         return true;
     }
 
@@ -141,7 +117,6 @@ public class FinalStrip extends AppCompatActivity {
         for (int i = 0; i < layout.getChildCount(); i++) {
             ImageView v = (ImageView) layout.getChildAt(i);
             if (((BitmapDrawable)v.getDrawable()).getBitmap() != null && !((BitmapDrawable)v.getDrawable()).getBitmap().isRecycled()) {
-                Log.d("recyclin", "yup");
                 ((BitmapDrawable) v.getDrawable()).getBitmap().recycle();
             }
             v.setImageBitmap(null);
@@ -173,6 +148,21 @@ public class FinalStrip extends AppCompatActivity {
                 mViewingPanel.addView(imageView);
             } catch (Exception e) {
                 e.printStackTrace();
+            }
+        }
+    }
+
+    private void getExternalStoragePermission(){
+        // Get permissions
+        if (ContextCompat.checkSelfPermission(FinalStrip.this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(FinalStrip.this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            } else {
+                ActivityCompat.requestPermissions(FinalStrip.this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        1);
             }
         }
     }

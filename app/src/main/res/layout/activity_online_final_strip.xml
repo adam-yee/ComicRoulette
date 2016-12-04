@@ -10,6 +10,7 @@
     android:paddingTop="8dp"
     android:orientation="vertical"
     android:gravity="center"
+    android:background="@color/colorPrimary"
     tools:context="com.example.adamgyee.comicstripbuilder.OnlineFinalStrip">
 
     <ScrollView

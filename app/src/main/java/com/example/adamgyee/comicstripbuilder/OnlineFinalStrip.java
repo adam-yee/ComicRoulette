@@ -50,30 +50,7 @@ public class OnlineFinalStrip extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        // Get permissions
-        if (ContextCompat.checkSelfPermission(OnlineFinalStrip.this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            Log.d("checked","have permisson");
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(OnlineFinalStrip.this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
-            } else {
-
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(OnlineFinalStrip.this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        1);
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
-            }
-        }
+        getExternalStoragePermission();
 
         // Show download option in ActionBar
         int id = item.getItemId();
@@ -89,9 +66,7 @@ public class OnlineFinalStrip extends AppCompatActivity {
     }
 
     private boolean saveComicToGallery(){
-        // TODO: implement save
 
-        Toast.makeText(getApplicationContext(), "Saved comic to gallery", Toast.LENGTH_SHORT).show();
         LinearLayout layout = (LinearLayout)findViewById(R.id.viewing_panel);
 
         // combine all bitmaps into a single strip to save
@@ -108,12 +83,13 @@ public class OnlineFinalStrip extends AppCompatActivity {
                 canvas.drawColor(Color.BLACK);
                 canvas.drawBitmap(bitmap, null, targetRect, null);
                 combined = combineImages(combined, dest);
-
             }
         }
 
         // Save to local gallery
         MediaStore.Images.Media.insertImage(getContentResolver(), combined, "ComicRoulette Image", "Created with ComicRoulette");
+        Toast.makeText(getApplicationContext(), "Saved comic to gallery", Toast.LENGTH_SHORT).show();
+
         return true;
     }
 
@@ -147,7 +123,6 @@ public class OnlineFinalStrip extends AppCompatActivity {
         for (int i = 0; i < layout.getChildCount(); i++) {
             ImageView v = (ImageView) layout.getChildAt(i);
             if (((BitmapDrawable)v.getDrawable()).getBitmap() != null && !((BitmapDrawable)v.getDrawable()).getBitmap().isRecycled()) {
-                Log.d("recyclin", "yup");
                 ((BitmapDrawable) v.getDrawable()).getBitmap().recycle();
             }
             v.setImageBitmap(null);
@@ -183,7 +158,6 @@ public class OnlineFinalStrip extends AppCompatActivity {
                             //mPrevFrame = response.get(getString(R.string.mPrevFrame_string)).toString();
                             //mCompletedFrames = response.get(getString(R.string.mCompletedFrames_string)).toString();
                             int completed = (int) response.get(getString(R.string.mCompletedFrames_string));
-                            Log.d("RESPONSE:", response.toString());
                             for (int i = 0; i < completed; i++){
                                 String getFrameString = "f" + i;
                                 String getFrame = response.get(getFrameString).toString();
@@ -204,7 +178,7 @@ public class OnlineFinalStrip extends AppCompatActivity {
                             }
 
                         } catch (Exception e) {
-                            Log.e("error", "json");
+                            Log.e("error", e.toString());
                         }
 
                     }
@@ -218,5 +192,20 @@ public class OnlineFinalStrip extends AppCompatActivity {
 
         queue.add(jsObjRequest);
 
+    }
+
+    private void getExternalStoragePermission(){
+        // Get permissions
+        if (ContextCompat.checkSelfPermission(OnlineFinalStrip.this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(OnlineFinalStrip.this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            } else {
+                ActivityCompat.requestPermissions(OnlineFinalStrip.this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        1);
+            }
+        }
     }
 }
