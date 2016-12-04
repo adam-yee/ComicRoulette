@@ -44,27 +44,5 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_alignParentBottom="true"
-        android:gravity="center"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/num_artists"/>
-
-        <Spinner
-            android:id="@+id/num_artists_spinner"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/num_artists"
-            >
-
-        </Spinner>
-    </LinearLayout>
-
 
 </RelativeLayout>
